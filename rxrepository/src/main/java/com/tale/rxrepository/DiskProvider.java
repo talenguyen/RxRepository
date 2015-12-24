@@ -9,6 +9,7 @@ package com.tale.rxrepository;
 
 import rx.Observable;
 
-public interface DiskProvider<T> extends Provider<T> {
+public interface DiskProvider<T> {
+  Observable<T> get();
   Observable<T> save(T data);
 }

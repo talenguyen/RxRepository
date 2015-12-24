@@ -15,10 +15,10 @@ import rx.functions.Func0;
 import rx.functions.Func1;
 
 public class Repository<T> {
-  private DiskProvider<T> diskProvider;
-  private CloudProvider<T> cloudProvider;
-  private T cache;
-  private Comparator<T> comparator;
+  Comparator<T> comparator;
+  DiskProvider<T> diskProvider;
+  CloudProvider<T> cloudProvider;
+  T cache;
 
   public Repository(DiskProvider<T> diskProvider, CloudProvider<T> cloudProvider,
       Comparator<T> comparator) {
@@ -34,16 +34,12 @@ public class Repository<T> {
   }
 
   public Observable<T> get() {
-    final Observable<T> cloud = cloudProvider.get().filter(new Func1<T, Boolean>() {
-      @Override public Boolean call(T t) {
-        // In case no comparator then we not filter.
-        return comparator == null || comparator.compare(t, cache) != 0;
-      }
-    }).flatMap(new Func1<T, Observable<T>>() {
-      @Override public Observable<T> call(T t) {
-        return diskProvider.save(t);
-      }
-    }).doOnNext(cacheAction());
+    final Observable<T> cloud = cloudProvider.get(0).filter(filterNewData()).flatMap(
+        new Func1<T, Observable<T>>() {
+          @Override public Observable<T> call(T t) {
+            return diskProvider.save(t);
+          }
+        }).doOnNext(cacheAction());
 
     return Observable.concat(getLocal(), cloud);
   }
@@ -59,7 +55,7 @@ public class Repository<T> {
    *
    * @return an Observable
    */
-  private Observable<T> getLocal() {
+  Observable<T> getLocal() {
     final Observable<T> disk = diskProvider.get().doOnNext(cacheAction());
     return Observable.concat(cache(), disk).first(new Func1<T, Boolean>() {
       @Override public Boolean call(T t) {
@@ -68,11 +64,7 @@ public class Repository<T> {
     }).onErrorResumeNext(Observable.<T>empty());
   }
 
-  private Boolean isNotNullOrEmpty(T t) {
-    return t != null && (!(t instanceof List) || ((List) t).size() > 0);
-  }
-
-  private Action1<T> cacheAction() {
+  Action1<T> cacheAction() {
     return new Action1<T>() {
       @Override public void call(T t) {
         Repository.this.cache = t;
@@ -80,11 +72,25 @@ public class Repository<T> {
     };
   }
 
-  private Observable<T> cache() {
+  Observable<T> cache() {
     return Observable.defer(new Func0<Observable<T>>() {
       @Override public Observable<T> call() {
         return Observable.just(cache);
       }
     });
+  }
+
+
+  Func1<T, Boolean> filterNewData() {
+    return new Func1<T, Boolean>() {
+      @Override public Boolean call(T t) {
+        // In case no comparator then we not filter.
+        return comparator == null || comparator.compare(t, cache) != 0;
+      }
+    };
+  }
+
+  Boolean isNotNullOrEmpty(T t) {
+    return t != null && (!(t instanceof List) || ((List) t).size() > 0);
   }
 }

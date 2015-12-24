@@ -80,7 +80,7 @@ public class RepositoryTest {
   private CloudProvider<String> getCloudChangeProvider(final String data1, final String data2) {
     return new CloudProvider<String>() {
       boolean first = true;
-      @Override public Observable<String> get() {
+      @Override public Observable<String> get(int page) {
         return Observable.defer(new Func0<Observable<String>>() {
           @Override public Observable<String> call() {
             if (first) {
@@ -99,7 +99,7 @@ public class RepositoryTest {
 
   private CloudProvider<String> getCloudProvider(final String data) {
     return new CloudProvider<String>() {
-      @Override public Observable<String> get() {
+      @Override public Observable<String> get(int page) {
         return Observable.defer(new Func0<Observable<String>>() {
           @Override public Observable<String> call() {
             return Observable.just(data);

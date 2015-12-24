@@ -7,5 +7,8 @@
 
 package com.tale.rxrepository;
 
-public interface CloudProvider<T> extends Provider<T> {
+import rx.Observable;
+
+public interface CloudProvider<T> {
+  Observable<T> get(int page);
 }
