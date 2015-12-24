@@ -1,13 +1,12 @@
 package com.tale.rxrepository;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.NoSuchElementException;
 import org.junit.Test;
 import rx.Observable;
 import rx.functions.Func0;
 import rx.observers.TestObserver;
-import rx.observers.TestSubscriber;
 
 /**
  * RxRepository
@@ -39,7 +38,7 @@ public class RepositoryTest {
     // Second time. Expect receive only cache.
     testObserver = new TestObserver<>();
     repository.get().subscribe(testObserver);
-    testObserver.assertReceivedOnNext(Arrays.asList(CLOUD));
+    testObserver.assertReceivedOnNext(Collections.singletonList(CLOUD));
   }
 
 
@@ -61,42 +60,6 @@ public class RepositoryTest {
     repository.get().subscribe(testObserver);
     testObserver.assertReceivedOnNext(Arrays.asList(CLOUD_1, CLOUD_2));
   }
-
-
-
-  @Test public void testGetEmpty() throws Exception {
-    DiskProvider<String> mockDisk = getEmptyDiskProvider();
-
-    CloudProvider<String> mockCloudProvider = getEmptyCloudProvider();
-
-    repository = new Repository<>(mockDisk, mockCloudProvider, getStringComparator());
-
-    TestSubscriber<String> testObserver = new TestSubscriber<>();
-    // First time. Expect receive both disk and cloud.
-    repository.get().subscribe(testObserver);
-    testObserver.assertError(NoSuchElementException.class);
-  }
-
-  private DiskProvider<String> getEmptyDiskProvider() {
-    return new DiskProvider<String>() {
-      @Override public Observable<String> save(String data) {
-        return get();
-      }
-
-      @Override public Observable<String> get() {
-        return Observable.empty();
-      }
-    };
-  }
-
-  private CloudProvider<String> getEmptyCloudProvider() {
-    return new CloudProvider<String>() {
-      @Override public Observable<String> get() {
-        return Observable.empty();
-      }
-    };
-  }
-
 
   private Comparator<String> getStringComparator() {
     return new Comparator<String>() {

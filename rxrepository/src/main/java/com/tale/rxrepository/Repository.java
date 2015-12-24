@@ -9,7 +9,6 @@ package com.tale.rxrepository;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import rx.Observable;
 import rx.functions.Action1;
 import rx.functions.Func0;
@@ -42,11 +41,7 @@ public class Repository<T> {
       }
     }).flatMap(new Func1<T, Observable<T>>() {
       @Override public Observable<T> call(T t) {
-        if (isNotNullOrEmpty(t)) {
-          return diskProvider.save(t);
-        } else {
-          return Observable.error(new NoSuchElementException());
-        }
+        return diskProvider.save(t);
       }
     }).doOnNext(cacheAction());
 
