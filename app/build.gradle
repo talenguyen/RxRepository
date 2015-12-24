@@ -28,7 +28,7 @@ dependencies {
   // Because RxAndroid releases are few and far between, it is recommended you also
   // explicitly depend on RxJava's latest version for bug fixes and new features.
   compile 'io.reactivex:rxjava:1.1.0'
-  compile (project(":rxrepository")) {
-    exclude group: 'io.reactivex'
+  compile ('com.github.talenguyen:RxRepository:0.0.1') {
+    exclude group: 'io.reactivex', module: 'rxjava'
   }
 }

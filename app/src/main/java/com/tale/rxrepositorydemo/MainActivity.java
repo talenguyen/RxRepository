@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         return Observable.defer(new Func0<Observable<Integer>>() {
           @Override public Observable<Integer> call() {
             SystemClock.sleep(2000);
-            return Observable.just(2000).compose(logSource("CLOUD"));
+            return Observable.just(null);//.compose(logSource("CLOUD"));
           }
         });
       }

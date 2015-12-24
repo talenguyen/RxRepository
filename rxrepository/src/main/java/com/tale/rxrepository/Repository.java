@@ -9,6 +9,7 @@ package com.tale.rxrepository;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import rx.Observable;
 import rx.functions.Action1;
 import rx.functions.Func0;
@@ -20,7 +21,8 @@ public class Repository<T> {
   private T cache;
   private Comparator<T> comparator;
 
-  public Repository(DiskProvider<T> diskProvider, CloudProvider<T> cloudProvider, Comparator<T> comparator) {
+  public Repository(DiskProvider<T> diskProvider, CloudProvider<T> cloudProvider,
+      Comparator<T> comparator) {
     if (diskProvider == null) {
       throw new NullPointerException("diskProvider must not be null");
     }
@@ -35,16 +37,16 @@ public class Repository<T> {
   public Observable<T> get() {
     final Observable<T> cloud = cloudProvider.get().filter(new Func1<T, Boolean>() {
       @Override public Boolean call(T t) {
-        if (comparator == null) {
-          // In case no comparator then we not filter.
-          return true;
-        }
-        return comparator.compare(t, cache)
-            != 0; // Compare with cache data. If has same then no need to emit
+        // In case no comparator then we not filter.
+        return comparator == null || comparator.compare(t, cache) != 0;
       }
     }).flatMap(new Func1<T, Observable<T>>() {
       @Override public Observable<T> call(T t) {
-        return diskProvider.save(t);
+        if (isNotNullOrEmpty(t)) {
+          return diskProvider.save(t);
+        } else {
+          return Observable.error(new NoSuchElementException());
+        }
       }
     }).doOnNext(cacheAction());
 
@@ -59,21 +61,20 @@ public class Repository<T> {
    * Get the Observable which emit local data. This guarantee that only one source which has data
    * will be emitted. Begin from cache, if cache has data then emit cache then stop, else query
    * from disk (database), if disk has data then emit then stop else return an EmptyObservable.
+   *
    * @return an Observable
    */
   private Observable<T> getLocal() {
     final Observable<T> disk = diskProvider.get().doOnNext(cacheAction());
     return Observable.concat(cache(), disk).first(new Func1<T, Boolean>() {
       @Override public Boolean call(T t) {
-        if (t == null) {
-          return false;
-        }
-        if (t instanceof List) {
-          return ((List) t).size() > 0;
-        }
-        return true;
+        return isNotNullOrEmpty(t);
       }
     }).onErrorResumeNext(Observable.<T>empty());
+  }
+
+  private Boolean isNotNullOrEmpty(T t) {
+    return t != null && (!(t instanceof List) || ((List) t).size() > 0);
   }
 
   private Action1<T> cacheAction() {
