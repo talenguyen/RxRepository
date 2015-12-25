@@ -18,8 +18,8 @@ import com.tale.rxrepositorymosby.RxRepositoryMvpLceFragment;
 import com.tale.rxrepositorymosby.RxRepositoryMvpLcePresenter;
 import java.util.List;
 
-public abstract class RecyclerFragment<M, V extends MvpLcemView<List<M>>, P extends RxRepositoryMvpLcePresenter<M, V>>
-    extends RxRepositoryMvpLceFragment<SwipeRefreshLayout, M, V, P>
+public abstract class RecyclerFragment<BM, M, V extends MvpLcemView<List<M>>, P extends RxRepositoryMvpLcePresenter<BM, M, V>>
+    extends RxRepositoryMvpLceFragment<SwipeRefreshLayout, BM, M, V, P>
     implements SwipeRefreshLayout.OnRefreshListener {
 
   protected RecyclerView recyclerView;
@@ -52,7 +52,6 @@ public abstract class RecyclerFragment<M, V extends MvpLcemView<List<M>>, P exte
   }
 
   @Override protected void animateLoadingViewIn() {
-
     super.animateLoadingViewIn();
   }
 

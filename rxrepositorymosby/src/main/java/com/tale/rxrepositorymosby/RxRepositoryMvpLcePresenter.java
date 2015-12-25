@@ -7,6 +7,7 @@
 
 package com.tale.rxrepositorymosby;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 import com.hannesdorfmann.mosby.mvp.MvpBasePresenter;
 import com.tale.rxrepository.ListRepository;
@@ -15,20 +16,23 @@ import java.util.NoSuchElementException;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
-public class RxRepositoryMvpLcePresenter<M, V extends MvpLcemView<List<M>>>
+public abstract class RxRepositoryMvpLcePresenter<BM, M, V extends MvpLcemView<List<M>>>
     extends MvpBasePresenter<V> {
 
-  protected ListRepository<M> repository;
+  protected ListRepository<BM> repository;
   protected Subscriber<List<M>> subscriber;
   protected boolean loadMore;
   protected boolean pullToRefresh;
   protected Throwable error;
 
-  public RxRepositoryMvpLcePresenter(ListRepository<M> repository) {
+  public RxRepositoryMvpLcePresenter(ListRepository<BM> repository) {
     this.repository = repository;
   }
+
+  @NonNull protected abstract Func1<List<BM>, List<M>> mapFunction();
 
   /**
    * Unsubscribes the subscriber and set it to null
@@ -42,11 +46,11 @@ public class RxRepositoryMvpLcePresenter<M, V extends MvpLcemView<List<M>>>
   }
 
   public void loadData() {
-    subscribe(repository.get(), false);
+    subscribe(repository.get().map(mapFunction()), false);
   }
 
   public void refresh() {
-    subscribe(repository.refresh(), true);
+    subscribe(repository.refresh().map(mapFunction()), true);
   }
 
   public void loadMore() {
@@ -55,7 +59,7 @@ public class RxRepositoryMvpLcePresenter<M, V extends MvpLcemView<List<M>>>
       return;
     }
     loadMore = true;
-    subscribe(repository.more(), false);
+    subscribe(repository.more().map(mapFunction()), false);
   }
 
   /**

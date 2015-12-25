@@ -8,6 +8,7 @@
 package com.tale.rxrepositorydemo;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -24,9 +25,10 @@ import com.tale.rxrepositorymosby.recyclerview.SupportLoadMoreGridLayoutManager;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import rx.functions.Func1;
 
 public class FragmentMain extends
-    RecyclerFragment<String, MvpLcemView<List<String>>, RxRepositoryMvpLcePresenter<String, MvpLcemView<List<String>>>> {
+    RecyclerFragment<String, String, MvpLcemView<List<String>>, RxRepositoryMvpLcePresenter<String, String, MvpLcemView<List<String>>>> {
 
   @Nullable @Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
@@ -53,8 +55,8 @@ public class FragmentMain extends
   }
 
   @Override
-  public RxRepositoryMvpLcePresenter<String, MvpLcemView<List<String>>> createPresenter() {
-    return new RxRepositoryMvpLcePresenter<>(
+  public RxRepositoryMvpLcePresenter<String, String, MvpLcemView<List<String>>> createPresenter() {
+    return new RxRepositoryMvpLcePresenter<String, String, MvpLcemView<List<String>>>(
         new ListRepository<>(new StringDiskProvider(), new StringCloudProvider(),
             new Comparator<List<String>>() {
               @Override public int compare(List<String> lhs, List<String> rhs) {
@@ -74,6 +76,14 @@ public class FragmentMain extends
                   }
                 }
               }
-            }));
+            })) {
+      @NonNull @Override protected Func1<List<String>, List<String>> mapFunction() {
+        return new Func1<List<String>, List<String>>() {
+          @Override public List<String> call(List<String> list) {
+            return list;
+          }
+        };
+      }
+    };
   }
 }
