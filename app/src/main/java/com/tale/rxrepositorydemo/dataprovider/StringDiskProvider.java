@@ -14,13 +14,16 @@ import rx.Observable;
 import rx.functions.Func0;
 
 public class StringDiskProvider implements com.tale.rxrepository.DiskProvider<List<String>> {
+  private static final String TAG = "StringDiskProvider";
   public static final List<String> DEFAULT;
+
   static {
     DEFAULT = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
       DEFAULT.add("Disk item: " + i);
     }
   }
+
   private List<String> data = DEFAULT;
 
   @Override public Observable<List<String>> get() {
