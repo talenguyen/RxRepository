@@ -35,3 +35,10 @@ dependencies {
   // explicitly depend on RxJava's latest version for bug fixes and new features.
   compile 'io.reactivex:rxjava:1.1.0'
 }
+
+task androidReleaseJar(type: Jar, dependsOn: assembleRelease) {
+  from "$buildDir/intermediates/classes/release/"
+  exclude '**/BuildConfig.class'
+  exclude '**/R.class'
+  exclude '**/R$*.class'
+}
