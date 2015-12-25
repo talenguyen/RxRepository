@@ -43,15 +43,25 @@ public class ListRepository<T> extends Repository<List<T>> {
     final int nextPage = page + 1;
     return cloudProvider.get(nextPage).filter(filterNewData()).map(new Func1<List<T>, List<T>>() {
       @Override public List<T> call(List<T> ts) {
-        cache.addAll(ts);
+        if (ts != null && ts.size() > 0) {
+          page = nextPage;
+          cache.addAll(ts);
+        }
         return cache;
       }
     });
   }
 
+  @Override public boolean hasCache() {
+    return cache != null && cache.size() > 0;
+  }
+
   @Override Action1<List<T>> cacheAction() {
     return new Action1<List<T>>() {
       @Override public void call(List<T> ts) {
+        if (ts == null || ts.size() == 0) {
+          return;
+        }
         cache.clear();
         cache.addAll(ts);
       }

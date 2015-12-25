@@ -48,6 +48,10 @@ public class Repository<T> {
     return cache;
   }
 
+  public boolean hasCache() {
+    return cache != null;
+  }
+
   /**
    * Get the Observable which emit local data. This guarantee that only one source which has data
    * will be emitted. Begin from cache, if cache has data then emit cache then stop, else query
@@ -56,7 +60,7 @@ public class Repository<T> {
    * @return an Observable
    */
   Observable<T> getLocal() {
-    final Observable<T> disk = diskProvider.get().doOnNext(cacheAction());
+    final Observable<T> disk = diskProvider.get().filter(filterNewData()).doOnNext(cacheAction());
     return Observable.concat(cache(), disk).first(new Func1<T, Boolean>() {
       @Override public Boolean call(T t) {
         return isNotNullOrEmpty(t);
