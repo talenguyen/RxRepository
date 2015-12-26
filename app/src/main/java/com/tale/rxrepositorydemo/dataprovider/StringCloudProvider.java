@@ -29,7 +29,7 @@ public class StringCloudProvider implements CloudProvider<List<String>> {
   }
 
   public static List<String> getData(int page) {
-    if (page == 3) {
+    if (page == 2) {
       return null;
     }
     final int startIndex = page * PAGE_SIZE;

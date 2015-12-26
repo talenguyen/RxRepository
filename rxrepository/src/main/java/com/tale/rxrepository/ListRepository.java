@@ -41,12 +41,14 @@ public class ListRepository<T> extends Repository<List<T>> {
 
   public Observable<List<T>> more() {
     final int nextPage = page + 1;
-    return cloudProvider.get(nextPage).filter(filterNewData()).map(new Func1<List<T>, List<T>>() {
+    return cloudProvider.get(nextPage).filter(new Func1<List<T>, Boolean>() {
+      @Override public Boolean call(List<T> ts) {
+        return ts != null && ts.size() > 0;
+      }
+    }).filter(filterNewData()).map(new Func1<List<T>, List<T>>() {
       @Override public List<T> call(List<T> ts) {
-        if (ts != null && ts.size() > 0) {
-          page = nextPage;
-          cache.addAll(ts);
-        }
+        page = nextPage;
+        cache.addAll(ts);
         return cache;
       }
     });
