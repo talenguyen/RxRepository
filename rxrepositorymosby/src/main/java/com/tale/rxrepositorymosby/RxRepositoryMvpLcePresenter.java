@@ -8,12 +8,13 @@
 package com.tale.rxrepositorymosby;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
+import android.support.annotation.VisibleForTesting;
 import com.hannesdorfmann.mosby.mvp.MvpBasePresenter;
 import com.tale.rxrepository.ListRepository;
 import java.util.List;
 import java.util.NoSuchElementException;
 import rx.Observable;
+import rx.Scheduler;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
@@ -69,7 +70,6 @@ public abstract class RxRepositoryMvpLcePresenter<BM, M, V extends MvpLcemView<L
    * @param pullToRefresh Pull to refresh?
    */
   public void subscribe(Observable<List<M>> observable, final boolean pullToRefresh) {
-
     this.pullToRefresh = pullToRefresh;
     if (!loadMore && isViewAttached()) {
       getView().showLoading(pullToRefresh);
@@ -93,12 +93,25 @@ public abstract class RxRepositoryMvpLcePresenter<BM, M, V extends MvpLcemView<L
       }
     };
 
-    observable.subscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(subscriber);
+    if (test()) {
+      observable.subscribe(subscriber);
+    } else {
+      observable.subscribeOn(getScheduler())
+          .observeOn(AndroidSchedulers.mainThread())
+          .subscribe(subscriber);
+    }
+  }
+
+  @VisibleForTesting boolean test() {
+    return false;
+  }
+
+  protected Scheduler getScheduler() {
+    return Schedulers.io();
   }
 
   protected void onCompleted() {
+
     if (loadMore) {
       // If loadMore flash is not reset, that mean onNext will not be called or no data then we
       // reset loadMore flag and set notify the view that no more to hide load more progress.
@@ -106,24 +119,28 @@ public abstract class RxRepositoryMvpLcePresenter<BM, M, V extends MvpLcemView<L
       if (isViewAttached()) {
         getView().onNoMore();
       }
-    }
-    if (error == null && !repository.hasCache()) {
+    } else if (!pullToRefresh && error == null && !repository.hasCache()) {
       if (isViewAttached()) {
         // onCompleted is called but there is no error and no data then notify the view that no
         // element to show and it should show empty view.
         getView().showError(new NoSuchElementException(), this.pullToRefresh);
       }
-    } else if (pullToRefresh) {
-      if (isViewAttached()) {
-        getView().showContent();
-      }
     }
+
     unsubscribe();
+    this.error = null;
     this.pullToRefresh = false;
   }
 
   protected void onError(Throwable e, boolean pullToRefresh) {
     this.error = e;
+    if (loadMore) {
+      loadMore = false;
+      if (isViewAttached()) {
+        getView().onNoMore();
+      }
+      return;
+    }
     if (isViewAttached()) {
       // Show light error in case pullToRefresh or has data displaying.
       getView().showError(e, pullToRefresh || repository.hasCache());
@@ -132,24 +149,14 @@ public abstract class RxRepositoryMvpLcePresenter<BM, M, V extends MvpLcemView<L
   }
 
   protected void onNext(List<M> data) {
-    if (data != null && data.size() > 0) {
-      for (int i = 0; i < data.size(); i++) {
-        Log.d("Presenter", "item: " + data.get(i));
-      }
-      // If have data then we reset loadMore flag.
-      loadMore = false;
-
-      if (isViewAttached()) {
-        final V view = getView();
-        view.setData(data);
-        view.showContent();
-      }
-    } else {
-      // If no data then we show empty
-      if (!repository.hasCache() && isViewAttached()) {
-        getView().showError(new NoSuchElementException(), false);
-      }
+    if (isViewAttached()) {
+      final V view = getView();
+      view.setData(data);
+      view.showContent();
     }
+
+    // If have data then we reset loadMore flag.
+    loadMore = false;
   }
 
   @Override public void detachView(boolean retainInstance) {

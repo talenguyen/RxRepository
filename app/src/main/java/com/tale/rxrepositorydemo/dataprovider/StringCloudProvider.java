@@ -29,6 +29,9 @@ public class StringCloudProvider implements CloudProvider<List<String>> {
   }
 
   public static List<String> getData(int page) {
+    if (page == 3) {
+      return null;
+    }
     final int startIndex = page * PAGE_SIZE;
     final int endIndex = startIndex + PAGE_SIZE;
     final List<String> result = new ArrayList<>(PAGE_SIZE);
