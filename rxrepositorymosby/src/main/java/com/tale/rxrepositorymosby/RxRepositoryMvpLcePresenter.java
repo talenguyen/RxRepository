@@ -134,6 +134,20 @@ public abstract class RxRepositoryMvpLcePresenter<BM, M, V extends MvpLcemView<L
 
   protected void onError(Throwable e, boolean pullToRefresh) {
     this.error = e;
+
+
+    if (loadMore || pullToRefresh) {
+      if (isViewAttached()) {
+        // Show light error in case pullToRefresh or loadMore.
+        getView().showError(e, true);
+      }
+    } else {
+      if (!repository.hasCache()) {
+        if (isViewAttached()) {
+          getView().showError(e, false);
+        }
+      }
+    }
     if (loadMore) {
       loadMore = false;
       if (isViewAttached()) {
@@ -141,10 +155,7 @@ public abstract class RxRepositoryMvpLcePresenter<BM, M, V extends MvpLcemView<L
       }
       return;
     }
-    if (isViewAttached()) {
-      // Show light error in case pullToRefresh or has data displaying.
-      getView().showError(e, pullToRefresh || repository.hasCache());
-    }
+
     unsubscribe();
   }
 

@@ -86,7 +86,7 @@ public class RxRepositoryMvpLcePresenterTest {
     presenter.loadData();
     Mockito.verify(view, Mockito.times(1)).setData(Mockito.anyList());
     Mockito.verify(view, Mockito.times(1)).showContent();
-    Mockito.verify(view, Mockito.never()).showError(any(Throwable.class), eq(false));
+    Mockito.verify(view, Mockito.never()).showError(any(Throwable.class), any(Boolean.class));
   }
 
   @Test public void testLoadData_onNext_Empty_onCompleted() throws Exception {
@@ -319,7 +319,7 @@ public class RxRepositoryMvpLcePresenterTest {
     presenter.loadMore();
     Mockito.verify(view, Mockito.never()).setData(Mockito.anyList());
     Mockito.verify(view, Mockito.never()).showContent();
-    Mockito.verify(view, Mockito.never()).showError(any(Throwable.class), any(Boolean.class));
+    Mockito.verify(view, Mockito.times(1)).showError(any(Throwable.class), eq(true));
     Mockito.verify(view, Mockito.times(1)).onNoMore();
   }
 
