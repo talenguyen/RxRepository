@@ -71,8 +71,10 @@ public abstract class RxRepositoryMvpLcePresenter<BM, M, V extends MvpLcemView<L
    */
   public void subscribe(Observable<List<M>> observable, final boolean pullToRefresh) {
     this.pullToRefresh = pullToRefresh;
-    if (!loadMore && isViewAttached()) {
-      getView().showLoading(pullToRefresh);
+    if (!repository.hasCache() && !loadMore) {
+      if(isViewAttached()) {
+        getView().showLoading(pullToRefresh);
+      }
     }
 
     unsubscribe();

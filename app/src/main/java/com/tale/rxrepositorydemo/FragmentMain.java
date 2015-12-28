@@ -35,6 +35,11 @@ public class FragmentMain extends
     return inflater.inflate(R.layout.content_main, container, false);
   }
 
+  @Override public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    super.onViewCreated(view, savedInstanceState);
+    recyclerView.setHasFixedSize(true);
+  }
+
   @Override protected RecyclerView.LayoutManager createLayoutManager() {
     return new SupportLoadMoreGridLayoutManager(getContext(), 2);
   }

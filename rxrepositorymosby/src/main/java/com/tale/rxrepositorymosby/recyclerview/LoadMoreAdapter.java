@@ -37,6 +37,10 @@ public abstract class LoadMoreAdapter<T>
     return items.get(position);
   }
 
+  public List<T> getItems() {
+    return items;
+  }
+
   @Override public int getItemCount() {
     return items == null ? 0 : items.size() + (enableLoadMore ? 1 : 0);
   }

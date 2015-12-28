@@ -63,6 +63,50 @@ public class RxRepositoryMvpLcePresenterTest {
     Mockito.verify(view, Mockito.times(2)).showContent();
   }
 
+
+  @Test public void testLoadData_onNext_onNext_loadData_onCompleted() throws Exception {
+    final ListRepository<Object> repository =
+        new ListRepository<>(diskProvider(), cloudProvider(), new ListComparator<>());
+    RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
+        presenter =
+        new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
+          @NonNull @Override protected Func1<List<Object>, List<Object>> mapFunction() {
+            return new Func1<List<Object>, List<Object>>() {
+              @Override public List<Object> call(List<Object> objects) {
+                return objects;
+              }
+            };
+          }
+
+          @Override boolean test() {
+            return true;
+          }
+        };
+
+    presenter.attachView(view);
+    presenter.loadData();
+    Mockito.verify(view, Mockito.times(1)).showLoading(any(Boolean.class));
+
+    presenter =  new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
+      @NonNull @Override protected Func1<List<Object>, List<Object>> mapFunction() {
+        return new Func1<List<Object>, List<Object>>() {
+          @Override public List<Object> call(List<Object> objects) {
+            return objects;
+          }
+        };
+      }
+
+      @Override boolean test() {
+        return true;
+      }
+    };
+    // New view and new presenter but use same repository will share same cache items. We expect the view will not show loading if has cached.
+    MvpLcemView view = Mockito.mock(MvpLcemView.class);
+    presenter.attachView(view);
+    presenter.loadData();
+    Mockito.verify(view, Mockito.never()).showLoading(any(Boolean.class));
+  }
+
   @Test public void testLoadData_onNext_onError_onCompleted() throws Exception {
     final ListRepository<Object> repository =
         new ListRepository<>(diskProvider(), cloudProviderError(), new ListComparator<>());
