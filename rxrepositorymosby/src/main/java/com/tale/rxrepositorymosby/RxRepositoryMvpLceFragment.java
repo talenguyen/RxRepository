@@ -9,12 +9,11 @@ package com.tale.rxrepositorymosby;
 
 import android.view.View;
 import com.hannesdorfmann.mosby.mvp.viewstate.lce.LceViewState;
-import com.hannesdorfmann.mosby.mvp.viewstate.lce.MvpLceViewStateFragment;
 import com.hannesdorfmann.mosby.mvp.viewstate.lce.data.RetainingLceViewState;
 import java.util.List;
 
 public abstract class RxRepositoryMvpLceFragment<CV extends View, BM, M, V extends MvpLcemView<List<M>>, P extends RxRepositoryMvpLcePresenter<BM, M, V>>
-    extends MvpLceViewStateFragment<CV, List<M>, V, P>  implements MvpLcemView<List<M>> {
+    extends BaseMvpLceViewStateFragment<CV, List<M>, V, P> implements MvpLcemView<List<M>> {
 
   protected List<M> data;
 
