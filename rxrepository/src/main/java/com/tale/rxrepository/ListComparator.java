@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class ListComparator<M> implements Comparator<List<M>> {
+
   @Override public int compare(List<M> o1, List<M> o2) {
     if (o1 == null) {
       if (o2 == null) {
@@ -33,7 +34,12 @@ public class ListComparator<M> implements Comparator<List<M>> {
     } else {
       final M m1 = o1.get(0);
       final M m2 = o2.get(0);
-      return m1.equals(m2) ? 0 : 1;
+      return compareItem(m1, m2);
     }
   }
+
+  protected int compareItem(M lhs, M rhs) {
+    return 1;//lhs.toString().equals(rhs.toString()) ? 0 : 1;
+  }
+
 }

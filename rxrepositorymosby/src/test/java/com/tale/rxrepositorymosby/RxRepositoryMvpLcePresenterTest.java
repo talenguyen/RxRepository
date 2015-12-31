@@ -259,7 +259,7 @@ public class RxRepositoryMvpLcePresenterTest {
     presenter.attachView(view);
     presenter.refresh();
     Mockito.verify(view, Mockito.times(1)).setData(Mockito.anyList());
-    Mockito.verify(view, Mockito.times(1)).showContent();
+    Mockito.verify(view, Mockito.times(2)).showContent();
     Mockito.verify(view, Mockito.never()).showError(any(Throwable.class), any(Boolean.class));
   }
 
@@ -285,7 +285,7 @@ public class RxRepositoryMvpLcePresenterTest {
     presenter.attachView(view);
     presenter.refresh();
     Mockito.verify(view, Mockito.never()).setData(Mockito.anyList());
-    Mockito.verify(view, Mockito.never()).showContent();
+    Mockito.verify(view, Mockito.times(1)).showContent();
     Mockito.verify(view, Mockito.times(1)).showError(any(Throwable.class), eq(true));
   }
   @Test public void testRefresh_onEmpty_onCompleted() throws Exception {
@@ -310,7 +310,7 @@ public class RxRepositoryMvpLcePresenterTest {
     presenter.attachView(view);
     presenter.refresh();
     Mockito.verify(view, Mockito.never()).setData(Mockito.anyList());
-    Mockito.verify(view, Mockito.never()).showContent();
+    Mockito.verify(view, Mockito.times(1)).showContent();
     Mockito.verify(view, Mockito.never()).showError(any(Throwable.class), any(Boolean.class));
   }
 

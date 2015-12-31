@@ -31,5 +31,6 @@ dependencies {
   // explicitly depend on RxJava's latest version for bug fixes and new features.
   compile 'io.reactivex:rxjava:1.1.0'
   compile (project(':rxrepositorymosby'))
+//  compile 'com.github.talenguyen.RxRepository:rxrepositorymosby:0.0.15'
 
 }

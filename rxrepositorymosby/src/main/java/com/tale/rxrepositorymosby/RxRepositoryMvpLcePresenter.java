@@ -121,7 +121,11 @@ public abstract class RxRepositoryMvpLcePresenter<BM, M, V extends MvpLcemView<L
       if (isViewAttached()) {
         getView().onNoMore();
       }
-    } else if (!pullToRefresh && error == null && !repository.hasCache()) {
+    } else if (pullToRefresh) {
+      if (isViewAttached()) {
+        getView().showContent();
+      }
+    } else if (error == null && !repository.hasCache()) {
       if (isViewAttached()) {
         // onCompleted is called but there is no error and no data then notify the view that no
         // element to show and it should show empty view.
@@ -137,11 +141,13 @@ public abstract class RxRepositoryMvpLcePresenter<BM, M, V extends MvpLcemView<L
   protected void onError(Throwable e, boolean pullToRefresh) {
     this.error = e;
 
-
     if (loadMore || pullToRefresh) {
       if (isViewAttached()) {
         // Show light error in case pullToRefresh or loadMore.
         getView().showError(e, true);
+        if (pullToRefresh) {
+          getView().showContent();
+        }
       }
     } else {
       if (!repository.hasCache()) {
