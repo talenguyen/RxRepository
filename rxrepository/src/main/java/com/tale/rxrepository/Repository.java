@@ -7,7 +7,6 @@
 
 package com.tale.rxrepository;
 
-import java.util.Comparator;
 import java.util.List;
 import rx.Observable;
 import rx.functions.Action1;
@@ -15,10 +14,10 @@ import rx.functions.Func0;
 import rx.functions.Func1;
 
 public class Repository<T> {
-  Comparator<T> comparator;
-  DiskProvider<T> diskProvider;
-  CloudProvider<T> cloudProvider;
-  T cache;
+  private Comparator<T> comparator;
+  protected DiskProvider<T> diskProvider;
+  protected CloudProvider<T> cloudProvider;
+  protected T cache;
 
   public Repository(DiskProvider<T> diskProvider, CloudProvider<T> cloudProvider,
       Comparator<T> comparator) {
@@ -59,7 +58,7 @@ public class Repository<T> {
    *
    * @return an Observable
    */
-  Observable<T> getLocal() {
+  protected Observable<T> getLocal() {
     final Observable<T> disk = diskProvider.get().filter(filterNewData()).doOnNext(cacheAction());
     return Observable.concat(cache(), disk).first(new Func1<T, Boolean>() {
       @Override public Boolean call(T t) {
@@ -76,7 +75,7 @@ public class Repository<T> {
     };
   }
 
-  Observable<T> cache() {
+  protected Observable<T> cache() {
     return Observable.defer(new Func0<Observable<T>>() {
       @Override public Observable<T> call() {
         return Observable.just(cache);
@@ -89,7 +88,7 @@ public class Repository<T> {
     return new Func1<T, Boolean>() {
       @Override public Boolean call(T t) {
         // In case no comparator then we not filter.
-        return comparator == null || comparator.compare(t, cache) != 0;
+        return comparator == null || !comparator.isSame(t, cache);
       }
     };
   }

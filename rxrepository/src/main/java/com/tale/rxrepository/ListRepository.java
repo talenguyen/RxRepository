@@ -8,7 +8,6 @@
 package com.tale.rxrepository;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import rx.Observable;
 import rx.functions.Action1;
