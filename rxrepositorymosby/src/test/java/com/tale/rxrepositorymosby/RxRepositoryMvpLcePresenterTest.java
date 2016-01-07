@@ -5,6 +5,7 @@ import com.tale.rxrepository.CloudProvider;
 import com.tale.rxrepository.DiskProvider;
 import com.tale.rxrepository.ListComparator;
 import com.tale.rxrepository.ListRepository;
+import com.tale.rxrepository.NetworkVerifier;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -18,6 +19,7 @@ import rx.functions.Func1;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+
 
 /**
  * RxRepository
@@ -40,7 +42,7 @@ public class RxRepositoryMvpLcePresenterTest {
 
   @Test public void testLoadData_onNext_onNext_onCompleted() throws Exception {
     final ListRepository<Object> repository =
-        new ListRepository<>(diskProvider(), cloudProvider(), new ListComparator<>());
+        new ListRepository<>(diskProvider(), cloudProvider(), new ListComparator<>(), networkVerifierConnected());
     final RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
         presenter =
         new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
@@ -66,7 +68,7 @@ public class RxRepositoryMvpLcePresenterTest {
 
   @Test public void testLoadData_onNext_onNext_loadData_onCompleted() throws Exception {
     final ListRepository<Object> repository =
-        new ListRepository<>(diskProvider(), cloudProvider(), new ListComparator<>());
+        new ListRepository<>(diskProvider(), cloudProvider(), new ListComparator<>(), networkVerifierConnected());
     RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
         presenter =
         new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
@@ -109,7 +111,33 @@ public class RxRepositoryMvpLcePresenterTest {
 
   @Test public void testLoadData_onNext_onError_onCompleted() throws Exception {
     final ListRepository<Object> repository =
-        new ListRepository<>(diskProvider(), cloudProviderError(), new ListComparator<>());
+        new ListRepository<>(diskProvider(), cloudProviderError(), new ListComparator<>(), networkVerifierConnected());
+    final RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
+        presenter =
+        new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
+          @NonNull @Override protected Func1<List<Object>, List<Object>> mapFunction() {
+            return new Func1<List<Object>, List<Object>>() {
+              @Override public List<Object> call(List<Object> objects) {
+                return objects;
+              }
+            };
+          }
+
+          @Override boolean test() {
+            return true;
+          }
+        };
+
+    presenter.attachView(view);
+    presenter.loadData();
+    Mockito.verify(view, Mockito.times(1)).setData(Mockito.anyList());
+    Mockito.verify(view, Mockito.times(1)).showContent();
+    Mockito.verify(view, Mockito.never()).showError(any(Throwable.class), any(Boolean.class));
+  }
+
+  @Test public void testLoadData_onNext_onNetworkError_onCompleted() throws Exception {
+    final ListRepository<Object> repository =
+        new ListRepository<>(diskProvider(), cloudProvider(), new ListComparator<>(), networkVerifierNotConnected());
     final RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
         presenter =
         new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
@@ -135,7 +163,7 @@ public class RxRepositoryMvpLcePresenterTest {
 
   @Test public void testLoadData_onNext_Empty_onCompleted() throws Exception {
     final ListRepository<Object> repository =
-        new ListRepository<>(diskProvider(), cloudProviderEmpty(), new ListComparator<>());
+        new ListRepository<>(diskProvider(), cloudProviderEmpty(), new ListComparator<>(), networkVerifierConnected());
     final RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
         presenter =
         new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
@@ -161,7 +189,7 @@ public class RxRepositoryMvpLcePresenterTest {
 
   @Test public void testLoadData_Empty_onNext_onCompleted() throws Exception {
     final ListRepository<Object> repository =
-        new ListRepository<>(diskProviderEmpty(), cloudProvider(), new ListComparator<>());
+        new ListRepository<>(diskProviderEmpty(), cloudProvider(), new ListComparator<>(), networkVerifierConnected());
     final RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
         presenter =
         new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
@@ -187,7 +215,33 @@ public class RxRepositoryMvpLcePresenterTest {
 
   @Test public void testLoadData_Empty_onError_onCompleted() throws Exception {
     final ListRepository<Object> repository =
-        new ListRepository<>(diskProviderEmpty(), cloudProviderError(), new ListComparator<>());
+        new ListRepository<>(diskProviderEmpty(), cloudProviderError(), new ListComparator<>(), networkVerifierConnected());
+    final RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
+        presenter =
+        new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
+          @NonNull @Override protected Func1<List<Object>, List<Object>> mapFunction() {
+            return new Func1<List<Object>, List<Object>>() {
+              @Override public List<Object> call(List<Object> objects) {
+                return objects;
+              }
+            };
+          }
+
+          @Override boolean test() {
+            return true;
+          }
+        };
+
+    presenter.attachView(view);
+    presenter.loadData();
+    Mockito.verify(view, Mockito.never()).setData(Mockito.anyList());
+    Mockito.verify(view, Mockito.never()).showContent();
+    Mockito.verify(view, Mockito.times(1)).showError(any(Throwable.class), eq(false));
+  }
+
+  @Test public void testLoadData_Empty_onNetworkError_onCompleted() throws Exception {
+    final ListRepository<Object> repository =
+        new ListRepository<>(diskProviderEmpty(), cloudProvider(), new ListComparator<>(), networkVerifierNotConnected());
     final RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
         presenter =
         new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
@@ -213,7 +267,7 @@ public class RxRepositoryMvpLcePresenterTest {
 
   @Test public void testLoadData_Empty_Empty_onCompleted() throws Exception {
     final ListRepository<Object> repository =
-        new ListRepository<>(diskProviderEmpty(), cloudProviderEmpty(), new ListComparator<>());
+        new ListRepository<>(diskProviderEmpty(), cloudProviderEmpty(), new ListComparator<>(), networkVerifierConnected());
     final RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
         presenter =
         new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
@@ -239,7 +293,7 @@ public class RxRepositoryMvpLcePresenterTest {
 
   @Test public void testRefresh_onNext_onCompleted() throws Exception {
     final ListRepository<Object> repository =
-        new ListRepository<>(diskProviderEmpty(), cloudProvider(), new ListComparator<>());
+        new ListRepository<>(diskProviderEmpty(), cloudProvider(), new ListComparator<>(), networkVerifierConnected());
     final RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
         presenter =
         new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
@@ -259,13 +313,13 @@ public class RxRepositoryMvpLcePresenterTest {
     presenter.attachView(view);
     presenter.refresh();
     Mockito.verify(view, Mockito.times(1)).setData(Mockito.anyList());
-    Mockito.verify(view, Mockito.times(2)).showContent();
+    Mockito.verify(view, Mockito.times(2)).showContent(); // 1 onNext and 1 onCompleted
     Mockito.verify(view, Mockito.never()).showError(any(Throwable.class), any(Boolean.class));
   }
 
   @Test public void testRefresh_onError_onCompleted() throws Exception {
     final ListRepository<Object> repository =
-        new ListRepository<>(diskProviderEmpty(), cloudProviderError(), new ListComparator<>());
+        new ListRepository<>(diskProviderEmpty(), cloudProviderError(), new ListComparator<>(), networkVerifierConnected());
     final RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
         presenter =
         new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
@@ -285,12 +339,37 @@ public class RxRepositoryMvpLcePresenterTest {
     presenter.attachView(view);
     presenter.refresh();
     Mockito.verify(view, Mockito.never()).setData(Mockito.anyList());
-    Mockito.verify(view, Mockito.times(1)).showContent();
     Mockito.verify(view, Mockito.times(1)).showError(any(Throwable.class), eq(true));
   }
+
+  @Test public void testRefresh_onNetworkError_onCompleted() throws Exception {
+    final ListRepository<Object> repository =
+        new ListRepository<>(diskProviderEmpty(), cloudProvider(), new ListComparator<>(), networkVerifierNotConnected());
+    final RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
+        presenter =
+        new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
+          @NonNull @Override protected Func1<List<Object>, List<Object>> mapFunction() {
+            return new Func1<List<Object>, List<Object>>() {
+              @Override public List<Object> call(List<Object> objects) {
+                return objects;
+              }
+            };
+          }
+
+          @Override boolean test() {
+            return true;
+          }
+        };
+
+    presenter.attachView(view);
+    presenter.refresh();
+    Mockito.verify(view, Mockito.never()).setData(Mockito.anyList());
+    Mockito.verify(view, Mockito.times(1)).showError(any(Throwable.class), eq(true));
+  }
+
   @Test public void testRefresh_onEmpty_onCompleted() throws Exception {
     final ListRepository<Object> repository =
-        new ListRepository<>(diskProviderEmpty(), cloudProviderEmpty(), new ListComparator<>());
+        new ListRepository<>(diskProviderEmpty(), cloudProviderEmpty(), new ListComparator<>(), networkVerifierConnected());
     final RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
         presenter =
         new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
@@ -316,7 +395,7 @@ public class RxRepositoryMvpLcePresenterTest {
 
   @Test public void testLoadMore_onNext_onCompleted() throws Exception {
     final ListRepository<Object> repository =
-        new ListRepository<>(diskProviderEmpty(), cloudProvider(), new ListComparator<>());
+        new ListRepository<>(diskProviderEmpty(), cloudProvider(), new ListComparator<>(), networkVerifierConnected());
     final RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
         presenter =
         new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
@@ -342,7 +421,34 @@ public class RxRepositoryMvpLcePresenterTest {
 
   @Test public void testLoadMore_onError_onCompleted() throws Exception {
     final ListRepository<Object> repository =
-        new ListRepository<>(diskProviderEmpty(), cloudProviderError(), new ListComparator<>());
+        new ListRepository<>(diskProviderEmpty(), cloudProviderError(), new ListComparator<>(), networkVerifierConnected());
+    final RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
+        presenter =
+        new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
+          @NonNull @Override protected Func1<List<Object>, List<Object>> mapFunction() {
+            return new Func1<List<Object>, List<Object>>() {
+              @Override public List<Object> call(List<Object> objects) {
+                return objects;
+              }
+            };
+          }
+
+          @Override boolean test() {
+            return true;
+          }
+        };
+
+    presenter.attachView(view);
+    presenter.loadMore();
+    Mockito.verify(view, Mockito.never()).setData(Mockito.anyList());
+    Mockito.verify(view, Mockito.never()).showContent();
+    Mockito.verify(view, Mockito.times(1)).showError(any(Throwable.class), eq(true));
+    Mockito.verify(view, Mockito.times(1)).onNoMore();
+  }
+
+  @Test public void testLoadMore_onNetworkError_onCompleted() throws Exception {
+    final ListRepository<Object> repository =
+        new ListRepository<>(diskProviderEmpty(), cloudProvider(), new ListComparator<>(), networkVerifierNotConnected());
     final RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
         presenter =
         new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
@@ -369,7 +475,7 @@ public class RxRepositoryMvpLcePresenterTest {
 
   @Test public void testLoadMore_Empty_onCompleted() throws Exception {
     final ListRepository<Object> repository =
-        new ListRepository<>(diskProviderEmpty(), cloudProviderEmpty(), new ListComparator<>());
+        new ListRepository<>(diskProviderEmpty(), cloudProviderEmpty(), new ListComparator<>(), networkVerifierConnected());
     final RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>
         presenter =
         new RxRepositoryMvpLcePresenter<Object, Object, MvpLcemView<List<Object>>>(repository) {
@@ -419,6 +525,21 @@ public class RxRepositoryMvpLcePresenterTest {
     };
   }
 
+  private NetworkVerifier networkVerifierConnected() {
+    return new NetworkVerifier() {
+      @Override public boolean isConnected() {
+        return true;
+      }
+    };
+  }
+
+  private NetworkVerifier networkVerifierNotConnected() {
+    return new NetworkVerifier() {
+      @Override public boolean isConnected() {
+        return false;
+      }
+    };
+  }
   private CloudProvider<List<Object>> cloudProvider() {
     return new CloudProvider<List<Object>>() {
       @Override public Observable<List<Object>> get(int page) {

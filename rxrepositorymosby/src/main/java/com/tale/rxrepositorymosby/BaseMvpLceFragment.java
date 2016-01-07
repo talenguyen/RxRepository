@@ -135,6 +135,7 @@ public abstract class BaseMvpLceFragment<CV extends View, M, V extends MvpLceVie
     String errorMsg = getErrorMessage(e, pullToRefresh);
 
     if (pullToRefresh) {
+
       showLightError(errorMsg);
     } else {
       if (errorView instanceof TextView) {

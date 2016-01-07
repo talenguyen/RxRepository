@@ -27,7 +27,6 @@ public abstract class RxRepositoryMvpLcePresenter<BM, M, V extends MvpLcemView<L
   protected Subscriber<List<M>> subscriber;
   protected boolean loadMore;
   protected boolean pullToRefresh;
-  protected Throwable error;
 
   public RxRepositoryMvpLcePresenter(ListRepository<BM> repository) {
     this.repository = repository;
@@ -117,7 +116,6 @@ public abstract class RxRepositoryMvpLcePresenter<BM, M, V extends MvpLcemView<L
     if (loadMore) {
       // If loadMore flash is not reset, that mean onNext will not be called or no data then we
       // reset loadMore flag and set notify the view that no more to hide load more progress.
-      loadMore = false;
       if (isViewAttached()) {
         getView().onNoMore();
       }
@@ -125,7 +123,7 @@ public abstract class RxRepositoryMvpLcePresenter<BM, M, V extends MvpLcemView<L
       if (isViewAttached()) {
         getView().showContent();
       }
-    } else if (error == null && !repository.hasCache()) {
+    } else if (!repository.hasCache()) {
       if (isViewAttached()) {
         // onCompleted is called but there is no error and no data then notify the view that no
         // element to show and it should show empty view.
@@ -134,20 +132,22 @@ public abstract class RxRepositoryMvpLcePresenter<BM, M, V extends MvpLcemView<L
     }
 
     unsubscribe();
-    this.error = null;
+    this.loadMore = false;
     this.pullToRefresh = false;
   }
 
   protected void onError(Throwable e, boolean pullToRefresh) {
-    this.error = e;
 
-    if (loadMore || pullToRefresh) {
+    if (loadMore) {
+      if (isViewAttached()) {
+        // Show light error in case pullToRefresh or loadMore.
+        getView().onNoMore();
+        getView().showError(e, true);
+      }
+    } else if (pullToRefresh) {
       if (isViewAttached()) {
         // Show light error in case pullToRefresh or loadMore.
         getView().showError(e, true);
-        if (pullToRefresh) {
-          getView().showContent();
-        }
       }
     } else {
       if (!repository.hasCache()) {
@@ -155,13 +155,6 @@ public abstract class RxRepositoryMvpLcePresenter<BM, M, V extends MvpLcemView<L
           getView().showError(e, false);
         }
       }
-    }
-    if (loadMore) {
-      loadMore = false;
-      if (isViewAttached()) {
-        getView().onNoMore();
-      }
-      return;
     }
 
     unsubscribe();
