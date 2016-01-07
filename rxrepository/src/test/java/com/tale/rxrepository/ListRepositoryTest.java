@@ -1,9 +1,9 @@
 package com.tale.rxrepository;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import rx.Observable;
 import rx.functions.Func0;
@@ -35,12 +35,43 @@ public class ListRepositoryTest {
     CLOUD_2.add("Cloud 4");
   }
 
-  @Test public void testRefresh() throws Exception {
+  private NetworkVerifier networkVerifier;
+  private NetworkVerifier networkVerifierError;
+
+  @Before public void setUp() throws Exception {
+    networkVerifier = new NetworkVerifier() {
+      @Override public boolean isConnected() {
+        return true;
+      }
+    };
+    networkVerifierError = new NetworkVerifier() {
+      @Override public boolean isConnected() {
+        return false;
+      }
+    };
+  }
+
+  @Test public void testRefresh_DiskNext_CloudNext() throws Exception {
     final DiskProvider<List<String>> disk = disk();
     final CloudProvider<List<String>> cloud = cloud();
     final Comparator<List<String>> comparator = comparator();
     final ListRepository<String> repository =
-        new ListRepository<>(disk, cloud, comparator);
+        new ListRepository<>(disk, cloud, comparator, networkVerifier);
+
+    // Refresh the first
+    TestSubscriber<List<String>> testSubscriber = new TestSubscriber<>();
+    repository.refresh().subscribe(testSubscriber);
+    testSubscriber.assertValueCount(1);
+    testSubscriber.assertValue(CLOUD_1);
+    testSubscriber.assertCompleted();
+  }
+
+  @Test public void testRefresh_2_DiskNext_CloudNext() throws Exception {
+    final DiskProvider<List<String>> disk = disk();
+    final CloudProvider<List<String>> cloud = cloud();
+    final Comparator<List<String>> comparator = comparator();
+    final ListRepository<String> repository =
+        new ListRepository<>(disk, cloud, comparator, networkVerifier);
 
     // Refresh the first
     TestSubscriber<List<String>> testSubscriber = new TestSubscriber<>();
@@ -54,12 +85,114 @@ public class ListRepositoryTest {
     testSubscriber.assertValueCount(0);
   }
 
+
+  @Test public void testRefresh_DiskNext_CloudError() throws Exception {
+    final DiskProvider<List<String>> disk = disk();
+    final CloudProvider<List<String>> cloud = getCloudProviderError();
+    final Comparator<List<String>> comparator = comparator();
+    final ListRepository<String> repository =
+        new ListRepository<>(disk, cloud, comparator, networkVerifier);
+
+    // Refresh the first
+    TestSubscriber<List<String>> testSubscriber = new TestSubscriber<>();
+    repository.refresh().subscribe(testSubscriber);
+    testSubscriber.assertError(NullPointerException.class);
+    testSubscriber.assertNotCompleted();
+  }
+
+  @Test public void testRefresh_DiskNext_CloudNetworkError() throws Exception {
+    final DiskProvider<List<String>> disk = disk();
+    final CloudProvider<List<String>> cloud = cloud();
+    final Comparator<List<String>> comparator = comparator();
+    final ListRepository<String> repository =
+        new ListRepository<>(disk, cloud, comparator, networkVerifierError);
+
+    // Refresh the first
+    TestSubscriber<List<String>> testSubscriber = new TestSubscriber<>();
+    repository.refresh().subscribe(testSubscriber);
+    testSubscriber.assertError(NoNetworkException.class);
+    testSubscriber.assertNotCompleted();
+  }
+
+  @Test public void testRefresh_DiskNext_CloudEmpty() throws Exception {
+    final DiskProvider<List<String>> disk = disk();
+    final CloudProvider<List<String>> cloud = getCloudProviderEmpty();
+    final Comparator<List<String>> comparator = comparator();
+    final ListRepository<String> repository =
+        new ListRepository<>(disk, cloud, comparator, networkVerifier);
+
+    // Refresh the first
+    TestSubscriber<List<String>> testSubscriber = new TestSubscriber<>();
+    repository.refresh().subscribe(testSubscriber);
+    testSubscriber.assertNoValues();
+    testSubscriber.assertNoErrors();
+    testSubscriber.assertCompleted();
+  }
+
+  @Test public void testLoadMore_DiskNext_CloudNext() throws Exception {
+    final DiskProvider<List<String>> disk = disk();
+    final CloudProvider<List<String>> cloud = cloud();
+    final Comparator<List<String>> comparator = comparator();
+    final ListRepository<String> repository =
+        new ListRepository<>(disk, cloud, comparator, networkVerifier);
+
+    // Refresh the first
+    TestSubscriber<List<String>> testSubscriber = new TestSubscriber<>();
+    repository.more().subscribe(testSubscriber);
+    testSubscriber.assertValueCount(1);
+    testSubscriber.assertValue(CLOUD_2);
+    testSubscriber.assertCompleted();
+  }
+
+  @Test public void testLoadMore_DiskNext_CloudError() throws Exception {
+    final DiskProvider<List<String>> disk = disk();
+    final CloudProvider<List<String>> cloud = getCloudProviderError();
+    final Comparator<List<String>> comparator = comparator();
+    final ListRepository<String> repository =
+        new ListRepository<>(disk, cloud, comparator, networkVerifier);
+
+    // Refresh the first
+    TestSubscriber<List<String>> testSubscriber = new TestSubscriber<>();
+    repository.more().subscribe(testSubscriber);
+    testSubscriber.assertError(NullPointerException.class);
+    testSubscriber.assertNotCompleted();
+  }
+
+  @Test public void testLoadMore_DiskNext_CloudNoNetworkError() throws Exception {
+    final DiskProvider<List<String>> disk = disk();
+    final CloudProvider<List<String>> cloud = getCloudProviderError();
+    final Comparator<List<String>> comparator = comparator();
+    final ListRepository<String> repository =
+        new ListRepository<>(disk, cloud, comparator, networkVerifierError);
+
+    // Refresh the first
+    TestSubscriber<List<String>> testSubscriber = new TestSubscriber<>();
+    repository.more().subscribe(testSubscriber);
+    testSubscriber.assertError(NoNetworkException.class);
+    testSubscriber.assertNotCompleted();
+  }
+
+  @Test public void testLoadMore_DiskNext_CloudEmpty() throws Exception {
+    final DiskProvider<List<String>> disk = disk();
+    final CloudProvider<List<String>> cloud = getCloudProviderEmpty();
+    final Comparator<List<String>> comparator = comparator();
+    final ListRepository<String> repository =
+        new ListRepository<>(disk, cloud, comparator, networkVerifier);
+
+    // Refresh the first
+    TestSubscriber<List<String>> testSubscriber = new TestSubscriber<>();
+    repository.more().subscribe(testSubscriber);
+    testSubscriber.assertNoValues();
+    testSubscriber.assertNoErrors();
+    testSubscriber.assertCompleted();
+  }
+
   @Test public void testMore() throws Exception {
     final DiskProvider<List<String>> disk = disk();
     final CloudProvider<List<String>> cloud = cloud();
     final Comparator<List<String>> comparator = comparator();
     final ListRepository<String> repository =
-        new ListRepository<>(disk, cloud, comparator);
+        new ListRepository<>(disk, cloud, comparator, networkVerifier);
 
     // Get. Expect 2 values, one from disk and one from cloud.
     TestSubscriber<List<String>> testSubscriber = new TestSubscriber<>();
@@ -81,40 +214,9 @@ public class ListRepositoryTest {
   }
 
   Comparator<List<String>> comparator() {
-    return new Comparator<List<String>>() {
-      @Override public int compare(List<String> o1, List<String> o2) {
-        if (o1 == null) {
-          if (o2 == null) {
-            return 0;
-          } else {
-            return -1;
-          }
-        } else {
-          if (o2 == null) {
-            return 1;
-          } else {
-            final int size1 = o1.size();
-            final int size2 = o2.size();
-            if (size1 == size2) {
-              final String first1 = o1.size() > 0 ? o1.get(0) : null;
-              final String first2 = o2.size() > 0 ? o2.get(0) : null;
-              if (first1 == null) {
-                if (first2 == null) {
-                  return 0;
-                } else {
-                  return -1;
-                }
-              } else {
-                return first1.equals(first2) ? 0 : 1;
-              }
-            } else {
-              return 1;
-            }
-          }
-        }
-      }
-    };
+    return new ListComparator<>();
   }
+
   CloudProvider<List<String>> cloud() {
     return new CloudProvider<List<String>>() {
       @Override public Observable<List<String>> get(int page) {
@@ -134,6 +236,7 @@ public class ListRepositoryTest {
       }
     };
   }
+
   DiskProvider<List<String>> disk() {
     return new DiskProvider<List<String>>() {
       List<String> data = DISK;
@@ -148,6 +251,21 @@ public class ListRepositoryTest {
       @Override public Observable<List<String>> save(List<String> data) {
         this.data = data;
         return get();
+      }
+    };
+  }
+
+  private CloudProvider<List<String>> getCloudProviderError() {
+    return new CloudProvider<List<String>>() {
+      @Override public Observable<List<String>> get(int page) {
+        return Observable.error(new NullPointerException());
+      }
+    };
+  }
+  private CloudProvider<List<String>> getCloudProviderEmpty() {
+    return new CloudProvider<List<String>>() {
+      @Override public Observable<List<String>> get(int page) {
+        return Observable.empty();
       }
     };
   }

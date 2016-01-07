@@ -2,11 +2,11 @@ package com.tale.rxrepository;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
+import org.junit.Before;
 import org.junit.Test;
 import rx.Observable;
 import rx.functions.Func0;
-import rx.observers.TestObserver;
+import rx.observers.TestSubscriber;
 
 /**
  * RxRepository
@@ -21,58 +21,152 @@ public class RepositoryTest {
   private static final String CLOUD_1 = "CLOUD_1";
   private static final String CLOUD_2 = "CLOUD_2";
   Repository<String> repository;
+  private NetworkVerifier networkVerifier;
 
-  @Test public void testGet1() throws Exception {
+  @Before public void setUp() throws Exception {
+    networkVerifier = new NetworkVerifier() {
+      @Override public boolean isConnected() {
+        return true;
+      }
+    };
+  }
+
+  @Test public void testGet_DiskNext_NetworkNext() throws Exception {
     DiskProvider<String> mockDisk = getDiskProvider(DISK);
 
     CloudProvider<String> mockCloudProvider = getCloudProvider(CLOUD);
 
-    repository = new Repository<>(mockDisk, mockCloudProvider, getStringComparator());
+    repository = new Repository<>(mockDisk, mockCloudProvider, getStringComparator(),
+        networkVerifier);
+    TestSubscriber<String> testSubscriber = new TestSubscriber<>();
+    repository.get().subscribe(testSubscriber);
+    testSubscriber.assertReceivedOnNext(Arrays.asList(DISK, CLOUD));
+    testSubscriber.assertCompleted();
+  }
 
-    TestObserver<String> testObserver;
+  @Test public void testGet_DiskNext_NetworkError() throws Exception {
+    DiskProvider<String> mockDisk = getDiskProvider(DISK);
+
+    CloudProvider<String> mockCloudProvider = getCloudProviderError();
+
+    repository = new Repository<>(mockDisk, mockCloudProvider, getStringComparator(),
+        networkVerifier);
+    TestSubscriber<String> testSubscriber = new TestSubscriber<>();
+    repository.get().subscribe(testSubscriber);
+    testSubscriber.assertReceivedOnNext(Collections.singletonList(DISK));
+    testSubscriber.assertError(NullPointerException.class);
+    testSubscriber.assertNotCompleted();
+  }
+
+
+
+  @Test public void testGet_DiskNext_NetworkEmpty() throws Exception {
+    DiskProvider<String> mockDisk = getDiskProvider(DISK);
+
+    CloudProvider<String> mockCloudProvider = getCloudProviderEmpty();
+
+    repository = new Repository<>(mockDisk, mockCloudProvider, getStringComparator(),
+        networkVerifier);
+    TestSubscriber<String> testSubscriber = new TestSubscriber<>();
+    repository.get().subscribe(testSubscriber);
+    testSubscriber.assertReceivedOnNext(Collections.singletonList(DISK));
+    testSubscriber.assertNoErrors();
+    testSubscriber.assertCompleted();
+  }
+
+
+  @Test public void testGet_DiskError_NetworkNext() throws Exception {
+    DiskProvider<String> mockDisk = getDiskProviderError();
+
+    CloudProvider<String> mockCloudProvider = getCloudProvider(CLOUD);
+
+    repository = new Repository<>(mockDisk, mockCloudProvider, getStringComparator(),
+        networkVerifier);
+    TestSubscriber<String> testSubscriber = new TestSubscriber<>();
+    repository.get().subscribe(testSubscriber);
+    testSubscriber.assertReceivedOnNext(Collections.singletonList(CLOUD));
+    testSubscriber.assertNoErrors();
+    testSubscriber.assertCompleted();
+  }
+
+  @Test public void testGet_DiskError_NetworkError() throws Exception {
+    DiskProvider<String> mockDisk = getDiskProviderError();
+
+    CloudProvider<String> mockCloudProvider = getCloudProviderError();
+
+    repository = new Repository<>(mockDisk, mockCloudProvider, getStringComparator(),
+        networkVerifier);
+    TestSubscriber<String> testSubscriber = new TestSubscriber<>();
+    repository.get().subscribe(testSubscriber);
+    testSubscriber.assertNoValues();
+    testSubscriber.assertError(NullPointerException.class);
+    testSubscriber.assertNotCompleted();
+  }
+
+  @Test public void testGet_DiskError_NetworkEmpty() throws Exception {
+    DiskProvider<String> mockDisk = getDiskProviderError();
+
+
+    CloudProvider<String> mockCloudProvider = getCloudProviderEmpty();
+    repository = new Repository<>(mockDisk, mockCloudProvider, getStringComparator(),
+        networkVerifier);
+    TestSubscriber<String> testSubscriber = new TestSubscriber<>();
+    repository.get().subscribe(testSubscriber);
+    testSubscriber.assertNoValues();
+    testSubscriber.assertNoErrors();
+    testSubscriber.assertCompleted();
+  }
+
+  @Test public void testGet_DiskNext_CloudNext_Twice() throws Exception {
+    DiskProvider<String> mockDisk = getDiskProvider(DISK);
+
+    CloudProvider<String> mockCloudProvider = getCloudProvider(CLOUD);
+
+    repository = new Repository<>(mockDisk, mockCloudProvider, getStringComparator(),
+        networkVerifier);
+
+    TestSubscriber<String> testObserver;
     // First time. Expect receive both disk and cloud.
-    testObserver = new TestObserver<>();
+    testObserver = new TestSubscriber<>();
     repository.get().subscribe(testObserver);
     testObserver.assertReceivedOnNext(Arrays.asList(DISK, CLOUD));
 
     // Second time. Expect receive only cache.
-    testObserver = new TestObserver<>();
+    testObserver = new TestSubscriber<>();
     repository.get().subscribe(testObserver);
     testObserver.assertReceivedOnNext(Collections.singletonList(CLOUD));
   }
 
 
-  @Test public void testGet2() throws Exception {
+  @Test public void testGet_DiskNext_CloudNext_CloudChange() throws Exception {
     DiskProvider<String> mockDisk = getDiskProvider(DISK);
 
     CloudProvider<String> mockCloudProvider = getCloudChangeProvider(CLOUD_1, CLOUD_2);
 
-    repository = new Repository<>(mockDisk, mockCloudProvider, getStringComparator());
+    repository = new Repository<>(mockDisk, mockCloudProvider, getStringComparator(),
+        networkVerifier);
 
-    TestObserver<String> testObserver;
+    TestSubscriber<String> testObserver;
     // First time. Expect receive both disk and cloud.
-    testObserver = new TestObserver<>();
+    testObserver = new TestSubscriber<>();
     repository.get().subscribe(testObserver);
     testObserver.assertReceivedOnNext(Arrays.asList(DISK, CLOUD_1));
 
     // Second time. Expect receive both cache and cloud.
-    testObserver = new TestObserver<>();
+    testObserver = new TestSubscriber<>();
     repository.get().subscribe(testObserver);
     testObserver.assertReceivedOnNext(Arrays.asList(CLOUD_1, CLOUD_2));
   }
 
+
+
   private Comparator<String> getStringComparator() {
     return new Comparator<String>() {
-      @Override public int compare(String o1, String o2) {
-        if (o1 == null) {
-          if (o2 == null) {
-            return 0;
-          } else {
-            return -1;
-          }
-        } else {
-          return o1.equals(o2) ? 0 : 1;
+      @Override public boolean isSame(String lhs, String rhs) {
+        if (lhs == null) {
+          return rhs == null;
         }
+        return rhs != null && lhs.equals(rhs);
       }
     };
   }
@@ -96,7 +190,32 @@ public class RepositoryTest {
     };
   }
 
+  private DiskProvider<String> getDiskProviderError() {
+    return new DiskProvider<String>() {
+      @Override public Observable<String> get() {
+        return Observable.error(new NullPointerException());
+      }
 
+      @Override public Observable<String> save(String data) {
+        return Observable.just(data);
+      }
+    };
+  }
+
+  private CloudProvider<String> getCloudProviderError() {
+    return new CloudProvider<String>() {
+      @Override public Observable<String> get(int page) {
+        return Observable.error(new NullPointerException());
+      }
+    };
+  }
+  private CloudProvider<String> getCloudProviderEmpty() {
+    return new CloudProvider<String>() {
+      @Override public Observable<String> get(int page) {
+        return Observable.empty();
+      }
+    };
+  }
   private CloudProvider<String> getCloudProvider(final String data) {
     return new CloudProvider<String>() {
       @Override public Observable<String> get(int page) {

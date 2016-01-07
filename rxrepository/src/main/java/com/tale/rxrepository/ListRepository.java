@@ -18,20 +18,22 @@ public class ListRepository<T> extends Repository<List<T>> {
   private int page = 0;
 
   public ListRepository(DiskProvider<List<T>> diskProvider, CloudProvider<List<T>> cloudProvider,
-      Comparator<List<T>> comparator) {
-    super(diskProvider, cloudProvider, comparator);
+      Comparator<List<T>> comparator, NetworkVerifier networkVerifier) {
+    super(diskProvider, cloudProvider, comparator, networkVerifier);
     cache = new ArrayList<>();
   }
 
   public Observable<List<T>> refresh() {
+    if (!networkVerifier.isConnected()) {
+      return networkError();
+    }
     return cloudProvider.get(0)
         .filter(filterNewData())
         .flatMap(new Func1<List<T>, Observable<List<T>>>() {
           @Override public Observable<List<T>> call(List<T> ts) {
             return diskProvider.save(ts);
           }
-        })
-        .doOnNext(cacheAction()).doOnNext(new Action1<List<T>>() {
+        }).doOnNext(cacheAction()).doOnNext(new Action1<List<T>>() {
           @Override public void call(List<T> ts) {
             page = 0;
           }
@@ -39,6 +41,9 @@ public class ListRepository<T> extends Repository<List<T>> {
   }
 
   public Observable<List<T>> more() {
+    if (!networkVerifier.isConnected()) {
+      return networkError();
+    }
     final int nextPage = page + 1;
     return cloudProvider.get(nextPage).filter(new Func1<List<T>, Boolean>() {
       @Override public Boolean call(List<T> ts) {

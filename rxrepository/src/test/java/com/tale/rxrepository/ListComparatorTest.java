@@ -23,29 +23,25 @@ public class ListComparatorTest {
   @Test public void testCompareEqual() throws Exception {
     final List<String> list1 = generate(5, 0);
     final List<String> list2 = generate(5, 0);
-    final int compareResult = comparator.compare(list1, list2);
-    Assert.assertEquals(0, compareResult);
+    Assert.assertTrue(comparator.isSame(list1, list2));
   }
 
   @Test public void testCompareDiff1() throws Exception {
     final List<String> list1 = generate(5, 0);
     final List<String> list2 = generate(6, 0);
-    final int compareResult = comparator.compare(list1, list2);
-    Assert.assertTrue(compareResult != 0);
+    Assert.assertFalse(comparator.isSame(list1, list2));
   }
 
   @Test public void testCompareDiff2() throws Exception {
     final List<String> list1 = generate(6, 0);
     final List<String> list2 = generate(5, 0);
-    final int compareResult = comparator.compare(list1, list2);
-    Assert.assertTrue(compareResult != 0);
+    Assert.assertFalse(comparator.isSame(list1, list2));
   }
 
   @Test public void testCompareDiff3() throws Exception {
     final List<String> list1 = generate(5, 1);
     final List<String> list2 = generate(5, 0);
-    final int compareResult = comparator.compare(list1, list2);
-    Assert.assertTrue(compareResult != 0);
+    Assert.assertFalse(comparator.isSame(list1, list2));
   }
 
   private List<String> generate(int size, int startIndex) {
