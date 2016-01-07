@@ -24,9 +24,6 @@ public class ListRepository<T> extends Repository<List<T>> {
   }
 
   public Observable<List<T>> refresh() {
-    if (!networkVerifier.isConnected()) {
-      return networkError();
-    }
     return cloudProvider.get(0)
         .filter(filterNewData())
         .flatMap(new Func1<List<T>, Observable<List<T>>>() {
@@ -41,9 +38,6 @@ public class ListRepository<T> extends Repository<List<T>> {
   }
 
   public Observable<List<T>> more() {
-    if (!networkVerifier.isConnected()) {
-      return networkError();
-    }
     final int nextPage = page + 1;
     return cloudProvider.get(nextPage).filter(new Func1<List<T>, Boolean>() {
       @Override public Boolean call(List<T> ts) {

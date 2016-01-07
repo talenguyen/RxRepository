@@ -15,14 +15,12 @@ import rx.functions.Func1;
 
 public class Repository<T> {
   private Comparator<T> comparator;
-  protected NetworkVerifier networkVerifier;
   protected DiskProvider<T> diskProvider;
   protected CloudProvider<T> cloudProvider;
   protected T cache;
 
   public Repository(DiskProvider<T> diskProvider, CloudProvider<T> cloudProvider,
       Comparator<T> comparator, NetworkVerifier networkVerifier) {
-    this.networkVerifier = networkVerifier;
     if (diskProvider == null) {
       throw new NullPointerException("diskProvider must not be null");
     }
@@ -30,22 +28,17 @@ public class Repository<T> {
       throw new NullPointerException("cloudProvider must not be null");
     }
     this.diskProvider = diskProvider;
-    this.cloudProvider = cloudProvider;
+    this.cloudProvider = new CloudProviderWrapper<>(cloudProvider, networkVerifier);
     this.comparator = comparator;
   }
 
   public Observable<T> get() {
-    final Observable<T> cloud;
-    if (networkVerifier.isConnected()) {
-      cloud = cloudProvider.get(0).filter(filterNewData()).flatMap(new Func1<T, Observable<T>>() {
-        @Override public Observable<T> call(T t) {
-          return diskProvider.save(t);
-        }
-      }).doOnNext(cacheAction());
-    } else {
-      cloud = networkError();
-    }
-
+    final Observable<T> cloud =
+        cloudProvider.get(0).filter(filterNewData()).flatMap(new Func1<T, Observable<T>>() {
+          @Override public Observable<T> call(T t) {
+            return diskProvider.save(t);
+          }
+        }).doOnNext(cacheAction());
     return Observable.concat(getLocal(), cloud);
   }
 
