@@ -130,8 +130,8 @@ public class RxRepositoryMvpLcePresenterTest {
 
     presenter.attachView(view);
     presenter.loadData();
-    Mockito.verify(view, Mockito.times(1)).setData(Mockito.anyList());
-    Mockito.verify(view, Mockito.times(1)).showContent();
+    Mockito.verify(view, Mockito.times(2)).setData(Mockito.anyList());
+    Mockito.verify(view, Mockito.times(2)).showContent();
     Mockito.verify(view, Mockito.never()).showError(any(Throwable.class), any(Boolean.class));
   }
 
@@ -156,8 +156,8 @@ public class RxRepositoryMvpLcePresenterTest {
 
     presenter.attachView(view);
     presenter.loadData();
-    Mockito.verify(view, Mockito.times(1)).setData(Mockito.anyList());
-    Mockito.verify(view, Mockito.times(1)).showContent();
+    Mockito.verify(view, Mockito.times(2)).setData(Mockito.anyList());
+    Mockito.verify(view, Mockito.times(2)).showContent();
     Mockito.verify(view, Mockito.never()).showError(any(Throwable.class), any(Boolean.class));
   }
 

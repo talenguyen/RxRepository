@@ -149,12 +149,15 @@ public abstract class RxRepositoryMvpLcePresenter<BM, M, V extends MvpLcemView<L
         // Show light error in case pullToRefresh or loadMore.
         getView().showError(e, true);
       }
-    } else {
+    } else if (!repository.hasCache()) {
       if (!repository.hasCache()) {
         if (isViewAttached()) {
           getView().showError(e, false);
         }
       }
+    } else if (isViewAttached() && getView().getData() == null) {
+      getView().setData(mapFunction().call(repository.getCache()));
+      getView().showContent();
     }
 
     unsubscribe();

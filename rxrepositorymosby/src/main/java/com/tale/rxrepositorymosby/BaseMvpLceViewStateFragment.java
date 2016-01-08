@@ -17,8 +17,8 @@ import com.hannesdorfmann.mosby.mvp.viewstate.lce.LceViewState;
  * @since 1.0.0
  */
 public abstract class BaseMvpLceViewStateFragment<CV extends View, M, V extends MvpLceView<M>, P extends MvpPresenter<V>>
-    extends BaseMvpLceFragment<CV, M, V, P> implements MvpLceView<M>,
-    BaseMvpViewStateDelegateCallback<V, P> {
+    extends BaseMvpLceFragment<CV, M, V, P>
+    implements MvpLcemView<M>, BaseMvpViewStateDelegateCallback<V, P> {
 
   /**
    * The viewstate will be instantiated by calling {@link #createViewState()} in {@link
@@ -90,15 +90,4 @@ public abstract class BaseMvpLceViewStateFragment<CV extends View, M, V extends 
 
     super.showLightError(msg);
   }
-
-  /**
-   * Get the data that has been set before in {@link #setData(Object)}
-   * <p>
-   * <b>It's necessary to return the same data as set before to ensure that {@link ViewState} works
-   * correctly</b>
-   * </p>
-   *
-   * @return The data
-   */
-  public abstract M getData();
 }
