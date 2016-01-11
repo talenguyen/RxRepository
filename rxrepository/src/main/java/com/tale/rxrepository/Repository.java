@@ -14,9 +14,9 @@ import rx.functions.Func0;
 import rx.functions.Func1;
 
 public class Repository<T> {
-  private Comparator<T> comparator;
-  protected DiskProvider<T> diskProvider;
-  protected CloudProvider<T> cloudProvider;
+  private final Comparator<T> comparator;
+  private final DiskProvider<T> diskProvider;
+  private final CloudProviderWrapper<T> cloudProvider;
   protected T cache;
 
   public Repository(DiskProvider<T> diskProvider, CloudProvider<T> cloudProvider,
@@ -50,6 +50,14 @@ public class Repository<T> {
     return cache != null;
   }
 
+  public DiskProvider<T> getDiskProvider() {
+    return diskProvider;
+  }
+
+  public CloudProvider<T> getCloudProvider() {
+    return cloudProvider.getCloudProvider();
+  }
+
   /**
    * Get the Observable which emit local data. This guarantee that only one source which has data
    * will be emitted. Begin from cache, if cache has data then emit cache then stop, else query
@@ -80,10 +88,6 @@ public class Repository<T> {
         return Observable.just(cache);
       }
     });
-  }
-
-  protected Observable<T> networkError() {
-    return Observable.error(new NoNetworkException());
   }
 
   Func1<T, Boolean> filterNewData() {

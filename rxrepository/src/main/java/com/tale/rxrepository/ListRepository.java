@@ -24,11 +24,11 @@ public class ListRepository<T> extends Repository<List<T>> {
   }
 
   public Observable<List<T>> refresh() {
-    return cloudProvider.get(0)
+    return getCloudProvider().get(0)
         .filter(filterNewData())
         .flatMap(new Func1<List<T>, Observable<List<T>>>() {
           @Override public Observable<List<T>> call(List<T> ts) {
-            return diskProvider.save(ts);
+            return getDiskProvider().save(ts);
           }
         }).doOnNext(cacheAction()).doOnNext(new Action1<List<T>>() {
           @Override public void call(List<T> ts) {
@@ -39,7 +39,7 @@ public class ListRepository<T> extends Repository<List<T>> {
 
   public Observable<List<T>> more() {
     final int nextPage = page + 1;
-    return cloudProvider.get(nextPage).filter(new Func1<List<T>, Boolean>() {
+    return getCloudProvider().get(nextPage).filter(new Func1<List<T>, Boolean>() {
       @Override public Boolean call(List<T> ts) {
         return ts != null && ts.size() > 0;
       }

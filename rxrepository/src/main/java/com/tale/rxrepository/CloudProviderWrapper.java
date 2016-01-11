@@ -30,4 +30,8 @@ class CloudProviderWrapper<T> implements CloudProvider<T> {
       });
     }
   }
+
+  public CloudProvider<T> getCloudProvider() {
+    return cloudProvider;
+  }
 }
