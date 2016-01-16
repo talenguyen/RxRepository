@@ -18,7 +18,12 @@ public abstract class LoadMoreAdapter<T>
       return;
     }
     this.enableLoadMore = enableLoadMore;
-    notifyDataSetChanged();
+    if (enableLoadMore) {
+      notifyDataSetChanged();
+    } else {
+      final int loadMorePosition = getItemCount();
+      notifyItemRemoved(loadMorePosition);
+    }
   }
 
   public void setItems(List<T> items) {

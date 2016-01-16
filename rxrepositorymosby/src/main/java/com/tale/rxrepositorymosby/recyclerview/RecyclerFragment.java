@@ -40,12 +40,6 @@ public abstract class RecyclerFragment<BM, M, V extends MvpLcemView<List<M>>, P 
    */
   protected abstract LoadMoreAdapter<M> createAdapter();
 
-  /**
-   * Return height of load more view then Recycler know how to scroll to hide load more view.
-   * @return height of load more view.
-   */
-  protected abstract int getLoadMoreHeight();
-
   @Override public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setRetainInstance(true);
@@ -65,12 +59,16 @@ public abstract class RecyclerFragment<BM, M, V extends MvpLcemView<List<M>>, P 
     recyclerView.addOnScrollListener(new OnVerticalScrollListener() {
       @Override public void onScrolledDownToLastItem() {
         super.onScrolledDownToLastItem();
-        loadMore();
+        if (adapter.isEnableLoadMore()) {
+          loadMore();
+        }
       }
 
       @Override public void onScrolledToBottom() {
         super.onScrolledToBottom();
-        loadMore();
+        if (adapter.isEnableLoadMore()) {
+          loadMore();
+        }
       }
     });
     adapter = createAdapter();
@@ -79,7 +77,7 @@ public abstract class RecyclerFragment<BM, M, V extends MvpLcemView<List<M>>, P 
   }
 
   @Override public void onNoMore() {
-    recyclerView.smoothScrollBy(0, -getLoadMoreHeight());
+    adapter.setEnableLoadMore(false);
   }
 
   @Override public void onRefresh() {
