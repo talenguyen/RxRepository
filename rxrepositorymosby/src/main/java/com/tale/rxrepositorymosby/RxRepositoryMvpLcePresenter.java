@@ -139,6 +139,7 @@ public abstract class RxRepositoryMvpLcePresenter<BM, M, V extends MvpLcemView<L
   protected void onError(Throwable e, boolean pullToRefresh) {
 
     if (loadMore) {
+      loadMore = false;
       if (isViewAttached()) {
         // Show light error in case pullToRefresh or loadMore.
         getView().onNoMore();
