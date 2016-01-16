@@ -2,7 +2,7 @@
  * RxRepository
  *
  * Created by Giang Nguyen on 12/25/15.
- * Copyright (c) 2015 Umbala. All rights reserved.
+ * Copyright (c) 2015 Tale. All rights reserved.
  */
 
 package com.tale.rxrepositorymosby.recyclerview;
@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import com.tale.rxrepositorymosby.MvpLcemView;
 import com.tale.rxrepositorymosby.R;
@@ -80,7 +79,6 @@ public abstract class RecyclerFragment<BM, M, V extends MvpLcemView<List<M>>, P 
   }
 
   @Override public void onNoMore() {
-    Log.d("RecyclerFragment", "onNoMore");
     recyclerView.smoothScrollBy(0, -getLoadMoreHeight());
   }
 

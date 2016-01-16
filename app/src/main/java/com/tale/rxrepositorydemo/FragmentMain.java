@@ -2,7 +2,7 @@
  * RxRepository
  *
  * Created by Giang Nguyen on 12/25/15.
- * Copyright (c) 2015 Umbala. All rights reserved.
+ * Copyright (c) 2015 Tale. All rights reserved.
  */
 
 package com.tale.rxrepositorydemo;
@@ -82,34 +82,15 @@ public class FragmentMain extends
     Log.d(TAG, "showLightError ");
   }
 
-  @Override
+  @NonNull @Override
   public RxRepositoryMvpLcePresenter<String, String, MvpLcemView<List<String>>> createPresenter() {
     final ListRepository<String> repository =
         new ListRepository<>(new StringDiskProvider(), new StringCloudProvider(),
             new ListComparator<String>(), new NetworkVerifier() {
           @Override public boolean isConnected() {
-            return false;
+            return true;
           }
         });
-    //repository.get()
-    //    .subscribeOn(Schedulers.io())
-    //    .observeOn(AndroidSchedulers.mainThread())
-    //    .subscribe(new Subscriber<List<String>>() {
-    //      @Override public void onCompleted() {
-    //        Log.d(TAG, "onCompleted ");
-    //      }
-    //
-    //      @Override public void onError(Throwable e) {
-    //        Log.e(TAG, "onError: ", e);
-    //      }
-    //
-    //      @Override public void onNext(List<String> strings) {
-    //        Log.d(TAG, "onNext ");
-    //        for (int i = 0; i < strings.size(); i++) {
-    //          Log.d(TAG, "item " + strings.get(i));
-    //        }
-    //      }
-    //    });
     return new RxRepositoryMvpLcePresenter<String, String, MvpLcemView<List<String>>>(repository) {
       @NonNull @Override protected Func1<List<String>, List<String>> mapFunction() {
         return new Func1<List<String>, List<String>>() {
