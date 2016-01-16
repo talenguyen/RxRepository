@@ -8,7 +8,6 @@
 package com.tale.rxrepository;
 
 import rx.Observable;
-import rx.functions.Func0;
 
 class CloudProviderWrapper<T> implements CloudProvider<T> {
   private CloudProvider<T> cloudProvider;
@@ -23,11 +22,7 @@ class CloudProviderWrapper<T> implements CloudProvider<T> {
     if (networkVerifier.isConnected()) {
       return cloudProvider.get(page);
     } else {
-      return Observable.defer(new Func0<Observable<T>>() {
-        @Override public Observable<T> call() {
-          return Observable.error(new NoNetworkException());
-        }
-      });
+      return Observable.error(new NoNetworkException());
     }
   }
 

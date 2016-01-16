@@ -14,10 +14,8 @@ public class ListComparator<M> implements Comparator<List<M>> {
   protected boolean isSameItem(M lhs, M rhs) {
     if (lhs == null) {
       return rhs == null;
-    } else if (rhs == null) {
-      return false;
     } else {
-      return lhs.toString().equals(rhs.toString());
+      return rhs != null && lhs.toString().equals(rhs.toString());
     }
   }
 

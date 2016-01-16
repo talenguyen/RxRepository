@@ -498,6 +498,8 @@ public class RxRepositoryMvpLcePresenterTest {
     Mockito.verify(view, Mockito.never()).showContent();
     Mockito.verify(view, Mockito.never()).showError(any(Throwable.class), any(Boolean.class));
     Mockito.verify(view, Mockito.times(1)).onNoMore();
+    presenter.loadMore();
+    Mockito.verify(view, Mockito.times(2)).onNoMore();
   }
 
   private DiskProvider<List<Object>> diskProvider() {

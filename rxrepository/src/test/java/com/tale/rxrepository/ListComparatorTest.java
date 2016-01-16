@@ -20,31 +20,31 @@ public class ListComparatorTest {
     comparator = new ListComparator<>();
   }
 
-  @Test public void testCompareEqual() throws Exception {
+  @Test public void testCompare_SameSizeAndSameStartIndex_ExpectEqual() throws Exception {
     final List<String> list1 = generate(5, 0);
     final List<String> list2 = generate(5, 0);
     Assert.assertTrue(comparator.isSame(list1, list2));
   }
 
-  @Test public void testCompareDiff1() throws Exception {
+  @Test public void testCompare_DiffSizeAndSameStartIndex_ExpectEqual() throws Exception {
     final List<String> list1 = generate(5, 0);
     final List<String> list2 = generate(6, 0);
-    Assert.assertFalse(comparator.isSame(list1, list2));
+    Assert.assertTrue(comparator.isSame(list1, list2));
   }
 
-  @Test public void testCompareDiff2() throws Exception {
-    final List<String> list1 = generate(6, 0);
-    final List<String> list2 = generate(5, 0);
-    Assert.assertFalse(comparator.isSame(list1, list2));
-  }
-
-  @Test public void testCompareDiff3() throws Exception {
+  @Test public void testCompare_SameSizeAndDiffStartIndex_ExpectDiff() throws Exception {
     final List<String> list1 = generate(5, 1);
     final List<String> list2 = generate(5, 0);
     Assert.assertFalse(comparator.isSame(list1, list2));
   }
 
-  private List<String> generate(int size, int startIndex) {
+  @Test public void testCompare_DiffSizeAndDiffStartIndex_ExpectDiff() throws Exception {
+    final List<String> list1 = generate(5, 0);
+    final List<String> list2 = generate(6, 1);
+    Assert.assertFalse(comparator.isSame(list1, list2));
+  }
+
+ List<String> generate(int size, int startIndex) {
     int endIndex = startIndex + size;
     final List<String> result = new ArrayList<>(size);
     for (int i = startIndex; i < endIndex; i++) {
