@@ -30,7 +30,9 @@ public class ListRepository<T> extends Repository<List<T>> {
           @Override public Observable<List<T>> call(List<T> ts) {
             return getDiskProvider().save(ts);
           }
-        }).doOnNext(cacheAction()).doOnNext(new Action1<List<T>>() {
+        })
+        .doOnNext(cacheAction())
+        .doOnNext(new Action1<List<T>>() {
           @Override public void call(List<T> ts) {
             page = 0;
           }
@@ -46,8 +48,7 @@ public class ListRepository<T> extends Repository<List<T>> {
     }).filter(filterNewData()).map(new Func1<List<T>, List<T>>() {
       @Override public List<T> call(List<T> ts) {
         page = nextPage;
-        cache.addAll(ts);
-        return cache;
+        return addMore(ts);
       }
     });
   }
@@ -66,5 +67,17 @@ public class ListRepository<T> extends Repository<List<T>> {
         cache.addAll(ts);
       }
     };
+  }
+
+  protected List<T> addMore(List<T> ts) {
+    final int size = ts.size();
+    for (int i = 0; i < size; i++) {
+      final T t = ts.get(i);
+      if (cache.contains(t)) {
+        continue;
+      }
+      cache.add(t);
+    }
+    return cache;
   }
 }
