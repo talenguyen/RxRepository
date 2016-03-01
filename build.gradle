@@ -1,5 +1,4 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-
 buildscript {
   repositories {
     jcenter()
@@ -13,10 +12,20 @@ buildscript {
   }
 }
 
+plugins {
+  id "jacoco"
+  id "com.github.kt3k.coveralls" version "2.6.3"
+}
+
 allprojects {
   repositories {
     jcenter()
     maven { url "https://jitpack.io" }
+  }
+  // Workaround to prevent Gradle from stealing focus from other apps during tests run/etc.
+  // https://gist.github.com/artem-zinnatullin/4c250e04636e25797165
+  tasks.withType(JavaForkOptions) {
+    jvmArgs '-Djava.awt.headless=true'
   }
 }
 
@@ -24,10 +33,12 @@ task clean(type: Delete) {
   delete rootProject.buildDir
 }
 
+ext.preDexLibs = !project.hasProperty('disablePreDex')
+
 ext {
   applicationId = "com.tale.rxrepositorydemo"
   compileSdkVersion = 23
-  buildToolsVersion = "23.0.1"
+  buildToolsVersion = "23.0.2"
   minSdkVersion = 14
   targetSdkVersion = 23
   versionCode = 1

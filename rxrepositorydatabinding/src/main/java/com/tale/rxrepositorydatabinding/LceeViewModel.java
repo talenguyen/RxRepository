@@ -11,6 +11,9 @@ import com.jakewharton.rxrelay.SerializedRelay;
 
 import rx.Observable;
 
+/**
+ * Base view model class which will handle to display Loading-Content-Error-Empty.
+ */
 public class LceeViewModel {
 
     private final SerializedRelay<Boolean, Boolean> showContent;
@@ -21,6 +24,9 @@ public class LceeViewModel {
         this.loading = BehaviorRelay.<Boolean>create().toSerialized();
     }
 
+    /**
+     * Call to enable loading mode.
+     */
     public void showLoading() {
         loading.call(true);
         showContent.call(false);

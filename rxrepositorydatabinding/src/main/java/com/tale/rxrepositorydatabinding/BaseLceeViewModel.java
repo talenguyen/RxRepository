@@ -16,12 +16,21 @@ import rx.Observable;
 import rx.functions.Action0;
 import rx.functions.Action1;
 
+/**
+ * Base View Model to handle Loading - Content - Error - Empty pattern when load content from api.
+ * @param <T> expected model type
+ */
 public class BaseLceeViewModel<T> {
     private final SerializedRelay<Boolean, Boolean> loading;
     private final SerializedRelay<Boolean, Boolean> error;
     private final ListRepository<T> repository;
     private final ThreadScheduler threadScheduler;
 
+    /**
+     * Constructor
+     * @param repository list repository object.
+     * @param threadScheduler thread scheduler which will be use to subscribe/observe
+     */
     public BaseLceeViewModel(ListRepository<T> repository, ThreadScheduler threadScheduler) {
         this.repository = repository;
         this.threadScheduler = threadScheduler;

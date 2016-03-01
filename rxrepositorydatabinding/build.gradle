@@ -1,5 +1,8 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
+apply from: '../config/jacoco.gradle'
+apply from: '../config/quality.gradle'
+
 group = 'com.github.talenguyen'
 
 def ext = rootProject.ext;
@@ -18,6 +21,13 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    // This allows us see tests execution progress in the output on the CI.
+    testOptions.unitTests.all {
+        testLogging {
+            events 'passed', 'skipped', 'failed', 'standardOut', 'standardError'
+            exceptionFormat 'full'
         }
     }
 }

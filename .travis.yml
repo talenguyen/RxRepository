@@ -18,6 +18,9 @@ android:
 script:
   - ./gradlew clean build -PdisablePreDex
 
+after_success:
+  - ./gradlew jacocoTestReport coveralls
+
 notifications:
   email: true
 
