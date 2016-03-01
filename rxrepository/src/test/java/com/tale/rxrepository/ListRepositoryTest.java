@@ -1,10 +1,12 @@
 package com.tale.rxrepository;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import rx.Observable;
 import rx.functions.Func0;
 import rx.observers.TestSubscriber;
@@ -31,8 +33,8 @@ public class ListRepositoryTest {
     CLOUD_1.add("Cloud 2");
 
     CLOUD_2 = new ArrayList<>();
+    CLOUD_2.add("Cloud 2");
     CLOUD_2.add("Cloud 3");
-    CLOUD_2.add("Cloud 4");
   }
 
   private NetworkVerifier networkVerifier;
@@ -205,10 +207,10 @@ public class ListRepositoryTest {
     repository.more().subscribe(testSubscriber);
     testSubscriber.assertValueCount(1);
     final List<String> result = testSubscriber.getOnNextEvents().get(0);
-    Assert.assertEquals(4, result.size());
+    Assert.assertEquals(3, result.size());
     final String first = result.get(0);
     Assert.assertEquals(CLOUD_1.get(0), first);
-    final String last = result.get(3);
+    final String last = result.get(2);
     Assert.assertEquals(CLOUD_2.get(1), last);
 
   }
