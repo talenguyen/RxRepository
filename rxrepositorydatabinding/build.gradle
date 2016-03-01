@@ -1,0 +1,42 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
+group = 'com.github.talenguyen'
+
+def ext = rootProject.ext;
+
+android {
+    compileSdkVersion ext.compileSdkVersion
+    buildToolsVersion ext.buildToolsVersion
+
+    defaultConfig {
+        minSdkVersion ext.minSdkVersion
+        targetSdkVersion ext.targetSdkVersion
+        versionCode ext.versionCode
+        versionName ext.versionName
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    testCompile "org.mockito:mockito-core:1.10.19"
+
+    compile (project(':rxrepository'))
+    compile 'io.reactivex:rxandroid:1.1.0'
+    // Because RxAndroid releases are few and far between, it is recommended you also
+    // explicitly depend on RxJava's latest version for bug fixes and new features.
+    compile 'io.reactivex:rxjava:1.1.0'
+    compile 'com.jakewharton.rxrelay:rxrelay:1.0.0'
+
+}
+
+task androidReleaseJar(type: Jar, dependsOn: assembleRelease) {
+    from "$buildDir/intermediates/classes/release/"
+    exclude '**/BuildConfig.class'
+}

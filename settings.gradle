@@ -1,1 +1,1 @@
-include ':app', ':rxrepository', ':rxrepositorymosby'
+include ':app', ':rxrepository', ':rxrepositorymosby', ':rxrepositorydatabinding'
